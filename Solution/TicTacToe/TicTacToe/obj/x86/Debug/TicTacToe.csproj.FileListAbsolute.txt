@@ -1,0 +1,7 @@
+D:\Projet\Creajeux\TicTacTow\Workshop\Solution\TicTacToe\TicTacToe\obj\x86\Debug\TicTacToe.csprojResolveAssemblyReference.cache
+D:\Projet\Creajeux\TicTacTow\Workshop\Solution\TicTacToe\TicTacToe\bin\Debug\TicTacToe.exe
+D:\Projet\Creajeux\TicTacTow\Workshop\Solution\TicTacToe\TicTacToe\bin\Debug\TicTacToe.pdb
+D:\Projet\Creajeux\TicTacTow\Workshop\Solution\TicTacToe\TicTacToe\obj\x86\Debug\TicTacToe.exe
+D:\Projet\Creajeux\TicTacTow\Workshop\Solution\TicTacToe\TicTacToe\obj\x86\Debug\TicTacToe.pdb
+D:\Projet\Creajeux\TicTacTow\Solution\TicTacToe\TicTacToe\obj\x86\Debug\TicTacToe.exe
+D:\Projet\Creajeux\TicTacTow\Solution\TicTacToe\TicTacToe\obj\x86\Debug\TicTacToe.pdb
