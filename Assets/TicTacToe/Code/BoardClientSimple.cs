@@ -6,8 +6,8 @@ using System.Threading;
 using System.Collections.Generic;
 
 public class BoardClientSimple : MonoBehaviour {
-    
-  
+
+
 
     Board m_Board = new Board();
 
@@ -16,23 +16,24 @@ public class BoardClientSimple : MonoBehaviour {
     public Board Board { get { return m_Board; } }
 
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start() {
         m_Board.Init();
         m_Board.SetCurrentTurnPlayer(Board.ePlayer.eCircle);
     }
 
-  
-	// Update is called once per frame
-	void Update () {
 
-      
+    // Update is called once per frame
+    void Update() {
+
+
     }
 
     public void SendPlayerMove(int index)
     {
         Console.Out.WriteLine("player move");
-        m_Board.PlayerMove(index);
+
+            m_Board.PlayerMove(index);
   
     }
 

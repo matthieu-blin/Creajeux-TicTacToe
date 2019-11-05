@@ -1,9 +1,31 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class OnlineManager : MonoBehaviour
 {
+    private static readonly OnlineManager instance = new OnlineManager();
+
+    // Explicit static constructor to tell C# compiler
+    // not to mark type as beforefieldinit
+    static OnlineManager()
+    {
+    }
+
+    private OnlineManager()
+    {
+    }
+
+    public static OnlineManager Instance
+    {
+        get
+        {
+            return instance;
+        }
+    }
+
+
 
     Assets.Net m_Net = null;
     // Start is called before the first frame update
@@ -43,7 +65,8 @@ public class OnlineManager : MonoBehaviour
         }
         if (GUILayout.Button("Send test message"))
         {
-            m_Net.SendMessage("Hello World");
+            byte[] message = Encoding.ASCII.GetBytes("Hello World");
+            m_Net.SendMessage(message);
         }
         if (GUILayout.Button("Close"))
         {
@@ -58,6 +81,13 @@ public class OnlineManager : MonoBehaviour
 
     public int OnGameMessage(Assets.Net.Message msg)
     {
+        return 0;
+    }
+
+    public int GetPlayerID()
+    {
+        if(m_Net != null)
+            return m_Net.GetPlayerIndex();
         return 0;
     }
 }

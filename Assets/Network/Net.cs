@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+
 using System.Threading.Tasks;
 
 using System.Net;
@@ -52,6 +52,11 @@ namespace Assets
         {
             public uint m_playerID = 0;
             public byte[] m_message = null;
+        }
+
+        public int GetPlayerIndex()
+        {
+            return IsHost() ? 0 : 1;
         }
 
         private readonly Object lockMessage = new Object();
@@ -289,9 +294,8 @@ namespace Assets
             thread.Start();
         }
 
-        public int SendMessage(string _txt)
+        public int SendMessage(byte[] message)
         {
-            byte[] message = Encoding.ASCII.GetBytes(_txt);
             if(message.Length > BufferSize)
             {
                 Log("error : buffer size exceeded");

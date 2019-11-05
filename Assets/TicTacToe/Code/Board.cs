@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-
+using System.Text;
 public class Board 
 {
 
@@ -13,7 +13,7 @@ public class Board
     }
 
     private ePlayer[] m_BoardState; // State of the board
-    private ePlayer m_CurrentTurn = ePlayer.eNone; // -1 = X, 1 = O
+    private ePlayer m_CurrentTurn = ePlayer.eNone; // 1 = X, 1 = O
     private ePlayer m_Winner = ePlayer.eNone;
 
     private int[] m_WinnerStateIndex ;
