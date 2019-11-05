@@ -6,7 +6,7 @@ using System;
 
 public class FileToConsole : MonoBehaviour {
 
-    public const string outFile = @"D:\matt\TicTacToe\Console.out.log";
+    public const string outFile = @"Console.out.log";
 
     StreamReader m_LogStream;
     TextWriter m_Writer;

@@ -87,6 +87,13 @@ namespace Assets
             return  new IPEndPoint(ipAddress , port);
         }
 
+        public bool IsHost()
+        {
+            return m_Host;
+        }
+            
+
+
         public void Process()
         {
             lock(lockMessage)
