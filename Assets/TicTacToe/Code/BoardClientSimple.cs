@@ -19,6 +19,7 @@ public class BoardClientSimple : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         m_Board.Init();
+        m_Board.SetCurrentTurnPlayer(Board.ePlayer.eCircle);
     }
 
   
@@ -30,6 +31,8 @@ public class BoardClientSimple : MonoBehaviour {
 
     public void SendPlayerMove(int index)
     {
+        Console.Out.WriteLine("player move");
+        m_Board.PlayerMove(index);
   
     }
 
