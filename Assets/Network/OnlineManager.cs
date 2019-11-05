@@ -1,21 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using UnityEngine;
 
 public class OnlineManager : MonoBehaviour
 {
-    private static readonly OnlineManager instance = new OnlineManager();
+    private static OnlineManager instance = null;
+    bool m_Connected = false;
 
-    // Explicit static constructor to tell C# compiler
-    // not to mark type as beforefieldinit
-    static OnlineManager()
-    {
-    }
-
-    private OnlineManager()
-    {
-    }
+   public delegate int GameMessageCallback(Assets.Net.Message msg);
+   public GameMessageCallback OnMessageReceived;
 
     public static OnlineManager Instance
     {
@@ -24,8 +20,33 @@ public class OnlineManager : MonoBehaviour
             return instance;
         }
     }
+    public void Awake()
+    {
+        instance = this;
+    }
 
+    public void StartHost()
+    {
+        m_Net = new Assets.Net(Assets.Net.Type.TCP);
+        m_Net.Log += Log;
+        m_Net.OnMessageReceived += OnGameMessage;
+        m_Net.StartServer("127.0.0.1", 50123);
+        m_Connected = true;
+    }
 
+    public void StartClient()
+    {
+        m_Net = new Assets.Net(Assets.Net.Type.TCP);
+        m_Net.Log += Log;
+        m_Net.OnMessageReceived += OnGameMessage;
+        m_Net.StartClient("127.0.0.1", 50123);
+        m_Connected = true;
+    }
+
+    public bool IsConnected()
+    {
+        return m_Connected;
+    }
 
     Assets.Net m_Net = null;
     // Start is called before the first frame update
@@ -58,10 +79,12 @@ public class OnlineManager : MonoBehaviour
         if(GUILayout.Button("Start Server"))
         {
             m_Net.StartServer("127.0.0.1", 50123);
+            m_Connected = true;
         }
         if (GUILayout.Button("Start Client "))
         {
             m_Net.StartClient("127.0.0.1", 50123);
+            m_Connected = true;
         }
         if (GUILayout.Button("Send test message"))
         {
@@ -78,9 +101,15 @@ public class OnlineManager : MonoBehaviour
     {
         Debug.Log(txt);
     }
+    public void SendMessage(byte[] _msg)
+    {
+        m_Net.SendMessage(_msg);
+    }
 
     public int OnGameMessage(Assets.Net.Message msg)
     {
+        OnMessageReceived(msg);
+     
         return 0;
     }
 
