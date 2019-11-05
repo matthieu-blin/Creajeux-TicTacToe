@@ -19,7 +19,7 @@ public class Board
     private int[] m_WinnerStateIndex ;
 
     public delegate void PlayerMoved(int index, ePlayer player);
-    public event PlayerMoved OnPlayerMoved;
+    //public event PlayerMoved OnPlayerMoved;
 
     public void Init()
     {

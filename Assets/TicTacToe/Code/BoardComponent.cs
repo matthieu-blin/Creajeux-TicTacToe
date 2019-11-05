@@ -20,7 +20,7 @@ public class BoardComponent : MonoBehaviour {
     private const float m_FlashDelay = 0.7f;
     private float m_FlashTime = 0.3f;
 
-    BoardClientSimple m_Network;
+    BoardClientSimple m_client;
 
     void Start()
     {
@@ -29,12 +29,12 @@ public class BoardComponent : MonoBehaviour {
         m_BoardButtonWidth = m_BoardButtons[0].width;
         m_BoardButtonHeight = m_BoardButtons[0].height;
 
-        m_Network = gameObject.GetComponent<BoardClientSimple>();
+        m_client = gameObject.GetComponent<BoardClientSimple>();
     }
     void Update()
     {
               //flash line
-        if (m_Network.Board.GetWinner() != Board.ePlayer.eNone)
+        if (m_client.Board.GetWinner() != Board.ePlayer.eNone)
         {
             m_FlashTime += Time.deltaTime;
             if (m_FlashTime > m_FlashDelay * 2)
@@ -55,26 +55,26 @@ public class BoardComponent : MonoBehaviour {
         GUI.Label(new Rect(0, 0, 320, 480), new GUIContent(m_BackGround));
 
         //if game as not start, do nothing
-        if (m_Network.Board.GetCurrentTurnPlayer() == Board.ePlayer.eNone)
+        if (m_client.Board.GetCurrentTurnPlayer() == Board.ePlayer.eNone)
             return;
 
         //if winner, just render the board as labels, and flash winner line
-        if (m_Network.Board.GetWinner() != Board.ePlayer.eNone)
+        if (m_client.Board.GetWinner() != Board.ePlayer.eNone)
         {
             bool hideflash = m_FlashTime >= m_FlashDelay;
-            for (int istate = 0; istate < m_Network.Board.GetBoard().Length; ++istate)
+            for (int istate = 0; istate < m_client.Board.GetBoard().Length; ++istate)
             {
                 //compute cell position
                 int xPos = m_xOffset + istate % 3 * m_BoardButtonWidth + istate % 3 * m_xSpacing;
                 int yPos = m_yOffset + istate / 3 * m_BoardButtonHeight + istate / 3 * m_ySpacing;
 
                 bool hide = false; //show cell by default
-                if (istate == m_Network.Board.GetWinningLine()[0] || istate == m_Network.Board.GetWinningLine()[1] || istate == m_Network.Board.GetWinningLine()[2])
+                if (istate == m_client.Board.GetWinningLine()[0] || istate == m_client.Board.GetWinningLine()[1] || istate == m_client.Board.GetWinningLine()[2])
                 {
                     hide = hideflash; //hide only if this cell is on winner liner, and flashing
                 }
 
-                Board.ePlayer state = m_Network.Board.GetBoard()[istate];
+                Board.ePlayer state = m_client.Board.GetBoard()[istate];
                 //render cell
                 if( state != Board.ePlayer.eNone && !hide)
                     GUI.Label(new Rect(xPos, yPos, m_BoardButtonWidth, m_BoardButtonHeight), m_BoardButtons[(int)state]);
@@ -88,24 +88,24 @@ public class BoardComponent : MonoBehaviour {
         //render owner of current turn;
         float smallbtnwidth = m_BoardButtonWidth / 2;
         float smallbtnheight = m_BoardButtonHeight / 2;
-        GUI.Label(new Rect(m_BackGround.width / 2 - smallbtnwidth / 2, 36 - smallbtnheight / 2, smallbtnwidth, smallbtnheight), m_BoardButtons[(int)m_Network.Board.GetCurrentTurnPlayer()]);
+        GUI.Label(new Rect(m_BackGround.width / 2 - smallbtnwidth / 2, 36 - smallbtnheight / 2, smallbtnwidth, smallbtnheight), m_BoardButtons[(int)m_client.Board.GetCurrentTurnPlayer()]);
 
 
         //render board
-        for (int istate = 0; istate < m_Network.Board.GetBoard().Length; ++istate)
+        for (int istate = 0; istate < m_client.Board.GetBoard().Length; ++istate)
         {
             //compute cell position
             int xPos = m_xOffset + istate % 3 * m_BoardButtonWidth + istate % 3 * m_xSpacing;
             int yPos = m_yOffset + istate / 3 * m_BoardButtonHeight + istate / 3 * m_ySpacing;
 
-            Board.ePlayer state = m_Network.Board.GetBoard()[istate];
+            Board.ePlayer state = m_client.Board.GetBoard()[istate];
             //render as button if empty
             if (state == Board.ePlayer.eNone)
             {
                 //if the current player clic on this cell, mark the cell state as his own, and switch turn
                 if (GUI.Button(new Rect(xPos, yPos, m_BoardButtonWidth, m_BoardButtonHeight),GUIContent.none))
                 {
-                    m_Network.SendPlayerMove(istate);
+                    m_client.SendPlayerMove(istate);
                 }
             }
             //or as label

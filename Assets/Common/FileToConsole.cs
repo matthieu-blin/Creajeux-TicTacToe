@@ -6,7 +6,7 @@ using System;
 
 public class FileToConsole : MonoBehaviour {
 
-    public const string outFile = @"D://Projet/Creajeux/TicTacTow/Console.out.log";
+    public const string outFile = @"D:\matt\TicTacToe\Console.out.log";
 
     StreamReader m_LogStream;
     TextWriter m_Writer;
@@ -17,7 +17,7 @@ public class FileToConsole : MonoBehaviour {
         {
             File.Delete(outFile);
         }
-        catch (Exception e) { }
+        catch (Exception ) { }
         FileStream fsin = new FileStream(outFile,
                                            FileMode.CreateNew,
                                            FileAccess.ReadWrite,
@@ -52,7 +52,7 @@ public class FileToConsole : MonoBehaviour {
                 Debug.Log(bufentry);
             }
         }
-        catch (Exception e)
+        catch (Exception )
         {
             // Let the user know what went wrong.
             Debug.LogError("The file could not be read:");
