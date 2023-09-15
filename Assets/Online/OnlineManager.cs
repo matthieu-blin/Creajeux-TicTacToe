@@ -91,6 +91,11 @@ public class OnlineManager : MonoBehaviour
         }
     }
 
+    public void RegisterOnMessageCallback(SocketAPI.MessageCallback _clb)
+    {
+        m_api.OnMessage += _clb;
+    }
+
     private int OnMessage(byte[] _msg)
     {
         return _msg.Length;

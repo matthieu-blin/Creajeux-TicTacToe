@@ -31,6 +31,8 @@ public class BoardComponent : MonoBehaviour {
         m_BoardButtonHeight = m_BoardButtons[0].height;
 
         m_Board.Init();
+        OnlineManager.Instance.RegisterOnMessageCallback(OnMessage);
+        
         Texture2D texture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
         // set the pixel values
         texture.SetPixel(0, 0, new Color(1f, 1f, 1f, 0.1f));
@@ -59,6 +61,33 @@ public class BoardComponent : MonoBehaviour {
         }
     }
 
+    private int OnMessage(byte[] _msg)
+    {
+        using (MemoryStream m = new MemoryStream(_msg))
+        {
+            using (BinaryReader w = new BinaryReader(m))
+            {
+                int type = w.ReadInt32();
+                switch (type)
+                {
+                    case Protocol.GAME_START_PLAYER:
+                    {
+                        int player = w.ReadInt32();
+                        m_Board.SetCurrentTurnPlayer((Board.ePlayer)player);
+                        break;
+                    }
+                    case Protocol.GAME_PLAYER_MOVE:
+                    {
+                        int player = w.ReadInt32();
+                        int cell = w.ReadInt32();
+                        m_Board.PlayerMove((Board.ePlayer) player, cell);
+                        break;
+                    }
+                }
+            }
+        }
+        return _msg.Length;
+    }
    
     //Main rendering function
     void OnGUI()
