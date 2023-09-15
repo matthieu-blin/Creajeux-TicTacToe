@@ -8,6 +8,7 @@ public class BoardComponent : MonoBehaviour {
     public Texture2D m_BackGround;
     public Texture2D[] m_BoardButtons;
 
+
     private int m_BoardButtonWidth;
     private int m_BoardButtonHeight;
 
@@ -19,6 +20,8 @@ public class BoardComponent : MonoBehaviour {
    
     private const float m_FlashDelay = 0.7f;
     private float m_FlashTime = 0.3f;
+    private Board.ePlayer m_MyPlayer = Board.ePlayer.eNone;
+    private bool P2P = false;
     
     Board m_Board = new Board();
     GUIStyle m_style = new GUIStyle(GUIStyle.none);
@@ -44,11 +47,13 @@ public class BoardComponent : MonoBehaviour {
     }
     void Update()
     {
-        if (!m_started && OnlineManager.Instance.GetNumConnectedClient() == 2)
+        if (!m_started && OnlineManager.Instance.IsHost() && OnlineManager.Instance.GetNumConnectedClient() == 2)
         {
+            P2P = true;
             m_started = true;
             m_Board.Start();
-            SendPlayerStart((int)m_Board.GetCurrentTurnPlayer());
+            m_MyPlayer = Board.ePlayer.eCross; //host always cross
+            SendPlayerStart( (int)m_Board.GetCurrentTurnPlayer());
         }
 
         //flash line
@@ -68,7 +73,14 @@ public class BoardComponent : MonoBehaviour {
         {
             using (BinaryReader w = new BinaryReader(m))
             {
+                m_MyPlayer = (Board.ePlayer) w.ReadInt32();
                 int player = w.ReadInt32();
+                P2P = w.ReadBoolean();
+                if(!m_started)
+                {
+                    m_started = true;
+                    m_Board.Start();
+                }
                 m_Board.SetCurrentTurnPlayer((Board.ePlayer)player);
             }
         }
@@ -79,9 +91,8 @@ public class BoardComponent : MonoBehaviour {
         {
             using (BinaryReader w = new BinaryReader(m))
             {
-                int player = w.ReadInt32();
                 int cell = w.ReadInt32();
-                m_Board.PlayerMove((Board.ePlayer) player, cell);
+                m_Board.PlayerMove(cell);
             }
         }
     }
@@ -92,19 +103,20 @@ public class BoardComponent : MonoBehaviour {
         {
             using (BinaryWriter w = new BinaryWriter(m))
             {
+                w.Write((int)Board.ePlayer.eCircle);
                 w.Write(player);
+                w.Write(P2P);
                 OnlineManager.Instance.SendMessage(Protocol.GAME_START_PLAYER, m.ToArray());
             }
         }
     }
     
-    public void SendPlayerMove( int player, int cellIndex)
+    public void SendPlayerMove(int cellIndex)
     {
         using (MemoryStream m = new MemoryStream())
         {
             using (BinaryWriter w = new BinaryWriter(m))
             {
-                w.Write(player);
                 w.Write(cellIndex);
                 OnlineManager.Instance.SendMessage(Protocol.GAME_PLAYER_MOVE, m.ToArray());
             }
@@ -169,11 +181,11 @@ public class BoardComponent : MonoBehaviour {
                 if (GUI.Button(new Rect(xPos, yPos, m_BoardButtonWidth, m_BoardButtonHeight),GUIContent.none,m_style ))
                 {
                     //if it's not my turn, do nothing
-                    if (OnlineManager.Instance.IsHost() && m_Board.GetCurrentTurnPlayer() == Board.ePlayer.eCircle
-                        || !OnlineManager.Instance.IsHost() && m_Board.GetCurrentTurnPlayer() == Board.ePlayer.eCross)
+                    if (m_Board.GetCurrentTurnPlayer() == m_MyPlayer)
                     {
-                        SendPlayerMove((int) m_Board.GetCurrentTurnPlayer(), istate);
-                        m_Board.PlayerMove(istate);
+                        SendPlayerMove(istate);
+                        if(P2P)
+                            m_Board.PlayerMove(istate);
                     }
                 }
             }
