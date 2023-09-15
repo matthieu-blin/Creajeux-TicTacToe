@@ -6,6 +6,16 @@ using UnityEngine;
 
 public class OnlineManager : MonoBehaviour
 {
+    private static OnlineManager instance = null;
+    public static OnlineManager Instance
+    {
+        get
+        {
+            return instance;
+        }
+    }
+    
+    
     [SerializeField] private String m_Host = "localhost";
 
     [SerializeField] private int m_port = 25000;
@@ -14,6 +24,12 @@ public class OnlineManager : MonoBehaviour
 
     
     private bool m_connected = false;
+
+    public void Awake()
+    {
+        instance = this;
+        DontDestroyOnLoad(this);
+    }
     // Start is called before the first frame update
     void Start()
     {
