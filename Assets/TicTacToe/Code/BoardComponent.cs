@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.IO;
 
 public class BoardComponent : MonoBehaviour {
 
@@ -22,6 +23,7 @@ public class BoardComponent : MonoBehaviour {
     Board m_Board = new Board();
     GUIStyle m_style = new GUIStyle(GUIStyle.none);
 
+    private bool m_started = false;
     void Start()
     {
         //all button m_Textures have the same properties, just store these values
@@ -29,7 +31,6 @@ public class BoardComponent : MonoBehaviour {
         m_BoardButtonHeight = m_BoardButtons[0].height;
 
         m_Board.Init();
-        m_Board.Start();
         Texture2D texture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
         // set the pixel values
         texture.SetPixel(0, 0, new Color(1f, 1f, 1f, 0.1f));
@@ -40,6 +41,13 @@ public class BoardComponent : MonoBehaviour {
     }
     void Update()
     {
+        if (!m_started && OnlineManager.Instance.GetNumConnectedClient() == 2)
+        {
+            m_started = true;
+            m_Board.Start();
+            OnlineManager.Instance.SendPlayerStart((int)m_Board.GetCurrentTurnPlayer());
+        }
+
         //flash line
         if (m_Board.GetWinner() != Board.ePlayer.eNone)
         {
@@ -109,7 +117,13 @@ public class BoardComponent : MonoBehaviour {
                 //if the current player clic on this cell, mark the cell state as his own, and switch turn
                 if (GUI.Button(new Rect(xPos, yPos, m_BoardButtonWidth, m_BoardButtonHeight),GUIContent.none,m_style ))
                 {
-                    m_Board.PlayerMove(istate);
+                    //if it's not my turn, do nothing
+                    if (OnlineManager.Instance.IsHost() && m_Board.GetCurrentTurnPlayer() == Board.ePlayer.eCircle
+                        || !OnlineManager.Instance.IsHost() && m_Board.GetCurrentTurnPlayer() == Board.ePlayer.eCross)
+                    {
+                        OnlineManager.Instance.SendPlayerMove((int) m_Board.GetCurrentTurnPlayer(), istate);
+                        m_Board.PlayerMove(istate);
+                    }
                 }
             }
             //or as label

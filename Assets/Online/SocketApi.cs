@@ -58,6 +58,26 @@ public class SocketAPI
     private List<Client> m_removingClients = new List<Client>();
     private List<Client> m_newClients = new List<Client>();
         
+    public bool IsConnected()
+        {
+            foreach (var s in m_sockets)
+            {
+                if (s.m_state != State.CONNECTED)
+                    return false;
+            }
+            return true;
+        }
+    public int GetNumConnectedClient()
+    {
+        int i = 1;
+        foreach (var s in m_sockets)
+        {
+            if (!s.m_isListening && s.m_state == State.CONNECTED)
+                i++;
+        }
+
+        return i;
+    }
     public void Process()
     {
         
