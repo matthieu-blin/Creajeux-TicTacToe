@@ -27,6 +27,12 @@ public class OnlineManager : MonoBehaviour
     private bool m_connected = false;
 
     private bool m_host = false;
+    
+    
+    public delegate void GameMessageCallback(byte[] _msg);
+
+    Dictionary<byte,GameMessageCallback> m_MessageCallbacksHandler;
+
     public void Awake()
     {
         instance = this;
@@ -37,7 +43,8 @@ public class OnlineManager : MonoBehaviour
     {
         m_api = new SocketAPI();
         m_api.Log = Debug.Log;
-        m_api.OnMessage = OnMessage; 
+        m_api.OnMessage = OnGameMessage; 
+        m_MessageCallbacksHandler = new Dictionary<byte, GameMessageCallback>();
     }
 
     public void Host()
@@ -64,48 +71,63 @@ public class OnlineManager : MonoBehaviour
         m_connected = true;
     }
 
-    public void SendPlayerStart( int player)
+
+    public void RegisterHandler(byte _handlerType, GameMessageCallback _cb)
     {
-        using (MemoryStream m = new MemoryStream())
+        GameMessageCallback cb;
+        if (m_MessageCallbacksHandler.TryGetValue(_handlerType, out cb))
         {
-            using (BinaryWriter w = new BinaryWriter(m))
-            {
-                w.Write(Protocol.GAME_START_PLAYER);
-                w.Write(player);
-                m_api.Send(m.ToArray());
-            }
+            m_MessageCallbacksHandler[_handlerType] = cb + _cb;
+        }
+        else
+        {
+            m_MessageCallbacksHandler.Add(_handlerType, _cb);
         }
     }
-    
-    public void SendPlayerMove( int player, int cellIndex)
-    {
-        using (MemoryStream m = new MemoryStream())
-        {
-            using (BinaryWriter w = new BinaryWriter(m))
-            {
-                w.Write(Protocol.GAME_PLAYER_MOVE);
-                w.Write(player);
-                w.Write(cellIndex);
-                m_api.Send(m.ToArray());
-            }
-        }
-    }
-
-    public void RegisterOnMessageCallback(SocketAPI.MessageCallback _clb)
-    {
-        m_api.OnMessage += _clb;
-    }
-
-    private int OnMessage(byte[] _msg)
-    {
-        return _msg.Length;
-    }
-
-
 // Update is called once per frame
     void Update()
     {
         if(m_connected)
             m_api.Process();
     }
+     public void SendMessage(byte _handlerType, byte[] _msg)
+        {
+            using (MemoryStream m = new MemoryStream())
+            {
+                using (BinaryWriter w = new BinaryWriter(m))
+                {
+                    w.Write(_handlerType);
+                    w.Write(_msg.Length);
+                    w.Write(_msg);
+                    m_api.Send(m.ToArray());
+                }
+            }
+            
+        }
+    
+        public int OnGameMessage(byte[] msg )
+        {
+            using (MemoryStream m = new MemoryStream(msg))
+            {
+                using(BinaryReader r = new BinaryReader(m))
+                {
+                    while (r.BaseStream.Position != r.BaseStream.Length)
+                    {
+                        byte handlerType = r.ReadByte();
+                        int size = r.ReadInt32();
+                        byte[] buffer = r.ReadBytes(size);
+                        GameMessageCallback cb;
+                        if (m_MessageCallbacksHandler.TryGetValue(handlerType, out cb))
+                        {
+                            cb(buffer);
+                        }
+                        else
+                        {
+                            m_api.Log("Unhandled Message");
+                        }
+                    }
+                }
+            }
+            return 0;
+        }
 }

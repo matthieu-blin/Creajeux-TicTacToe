@@ -31,7 +31,8 @@ public class BoardComponent : MonoBehaviour {
         m_BoardButtonHeight = m_BoardButtons[0].height;
 
         m_Board.Init();
-        OnlineManager.Instance.RegisterOnMessageCallback(OnMessage);
+        OnlineManager.Instance.RegisterHandler(Protocol.GAME_START_PLAYER, OnPlayerStartMsg);
+        OnlineManager.Instance.RegisterHandler(Protocol.GAME_PLAYER_MOVE, OnPlayerMoveMsg);
         
         Texture2D texture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
         // set the pixel values
@@ -47,7 +48,7 @@ public class BoardComponent : MonoBehaviour {
         {
             m_started = true;
             m_Board.Start();
-            OnlineManager.Instance.SendPlayerStart((int)m_Board.GetCurrentTurnPlayer());
+            SendPlayerStart((int)m_Board.GetCurrentTurnPlayer());
         }
 
         //flash line
@@ -61,32 +62,53 @@ public class BoardComponent : MonoBehaviour {
         }
     }
 
-    private int OnMessage(byte[] _msg)
+    private void OnPlayerStartMsg(byte[] _msg)
     {
         using (MemoryStream m = new MemoryStream(_msg))
         {
             using (BinaryReader w = new BinaryReader(m))
             {
-                int type = w.ReadInt32();
-                switch (type)
-                {
-                    case Protocol.GAME_START_PLAYER:
-                    {
-                        int player = w.ReadInt32();
-                        m_Board.SetCurrentTurnPlayer((Board.ePlayer)player);
-                        break;
-                    }
-                    case Protocol.GAME_PLAYER_MOVE:
-                    {
-                        int player = w.ReadInt32();
-                        int cell = w.ReadInt32();
-                        m_Board.PlayerMove((Board.ePlayer) player, cell);
-                        break;
-                    }
-                }
+                int player = w.ReadInt32();
+                m_Board.SetCurrentTurnPlayer((Board.ePlayer)player);
             }
         }
-        return _msg.Length;
+    }
+    private void OnPlayerMoveMsg(byte[] _msg)
+    {
+        using (MemoryStream m = new MemoryStream(_msg))
+        {
+            using (BinaryReader w = new BinaryReader(m))
+            {
+                int player = w.ReadInt32();
+                int cell = w.ReadInt32();
+                m_Board.PlayerMove((Board.ePlayer) player, cell);
+            }
+        }
+    }
+    
+    public void SendPlayerStart( int player)
+    {
+        using (MemoryStream m = new MemoryStream())
+        {
+            using (BinaryWriter w = new BinaryWriter(m))
+            {
+                w.Write(player);
+                OnlineManager.Instance.SendMessage(Protocol.GAME_START_PLAYER, m.ToArray());
+            }
+        }
+    }
+    
+    public void SendPlayerMove( int player, int cellIndex)
+    {
+        using (MemoryStream m = new MemoryStream())
+        {
+            using (BinaryWriter w = new BinaryWriter(m))
+            {
+                w.Write(player);
+                w.Write(cellIndex);
+                OnlineManager.Instance.SendMessage(Protocol.GAME_PLAYER_MOVE, m.ToArray());
+            }
+        }
     }
    
     //Main rendering function
@@ -150,7 +172,7 @@ public class BoardComponent : MonoBehaviour {
                     if (OnlineManager.Instance.IsHost() && m_Board.GetCurrentTurnPlayer() == Board.ePlayer.eCircle
                         || !OnlineManager.Instance.IsHost() && m_Board.GetCurrentTurnPlayer() == Board.ePlayer.eCross)
                     {
-                        OnlineManager.Instance.SendPlayerMove((int) m_Board.GetCurrentTurnPlayer(), istate);
+                        SendPlayerMove((int) m_Board.GetCurrentTurnPlayer(), istate);
                         m_Board.PlayerMove(istate);
                     }
                 }
